@@ -1,16 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import PropTypes from "prop-types";
 import { Camera, CameraOff, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { loadModels, detectFaces, drawResults } from "@/utils/faceDetection";
-import React from "react";
 
-const CameraFeed = ({ onEmotionDetected }) => {
+const CameraFeed = ({ onMotionDetected }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const previousImageData = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,7 +22,11 @@ const CameraFeed = ({ onEmotionDetected }) => {
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 320, height: 240, facingMode: "user" },
+        video: {
+          width: { ideal: 320 },
+          height: { ideal: 240 },
+          facingMode: "user",
+        },
       });
 
       if (videoRef.current) {
@@ -32,7 +34,6 @@ const CameraFeed = ({ onEmotionDetected }) => {
         streamRef.current = stream;
       }
 
-      await loadModels(); // Load AI models
       setIsLoading(false);
     } catch (err) {
       console.error("Error accessing webcam:", err);
@@ -54,21 +55,49 @@ const CameraFeed = ({ onEmotionDetected }) => {
     };
   }, []);
 
-  const analyzeFrame = async () => {
+  const detectMotion = (currentImageData, previousImageData) => {
+    const currentData = currentImageData.data;
+    const previousData = previousImageData.data;
+    let motionPixels = 0;
+    let totalPixels = currentData.length / 4;
+
+    for (let i = 0; i < currentData.length; i += 4) {
+      const rDiff = Math.abs(currentData[i] - previousData[i]);
+      const gDiff = Math.abs(currentData[i + 1] - previousData[i + 1]);
+      const bDiff = Math.abs(currentData[i + 2] - previousData[i + 2]);
+
+      if (rDiff > 30 || gDiff > 30 || bDiff > 30) {
+        motionPixels++;
+      }
+    }
+
+    return (motionPixels / totalPixels) * 100;
+  };
+
+  const analyzeFrame = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
-    const faces = await detectFaces(videoRef.current);
-    drawResults(videoRef.current, canvasRef.current, faces, "boxLandmarks");
+    const context = canvasRef.current.getContext("2d");
+    context.drawImage(videoRef.current, 0, 0, 320, 240);
 
-    if (faces.length > 0) {
-      const expressions = faces[0].expressions;
-      const emotionData = {
-        angry: expressions.angry || 0,
-        sad: expressions.sad || 0,
-        frustrated: expressions.disgusted || 0,
+    const currentImageData = context.getImageData(0, 0, 320, 240);
+
+    if (previousImageData.current) {
+      const motionPercentage = detectMotion(
+        currentImageData,
+        previousImageData.current
+      );
+
+      const motionData = {
+        timestamp: new Date().getTime(),
+        motionLevel: motionPercentage,
+        estimatedStress: Math.min(100, motionPercentage * 2),
       };
-      onEmotionDetected(emotionData);
+
+      onMotionDetected(motionData);
     }
+
+    previousImageData.current = currentImageData;
   };
 
   useEffect(() => {
@@ -76,14 +105,14 @@ const CameraFeed = ({ onEmotionDetected }) => {
 
     const intervalId = setInterval(analyzeFrame, 1000);
     return () => clearInterval(intervalId);
-  }, [isLoading, onEmotionDetected]);
+  }, [isLoading]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Camera className="w-5 h-5" />
-          Facial Emotion Detection
+          Motion Detection Camera
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -115,12 +144,13 @@ const CameraFeed = ({ onEmotionDetected }) => {
               playsInline
               muted
               className="w-full h-auto"
+              onLoadedMetadata={(e) => e.target.play()}
             />
             <canvas
               ref={canvasRef}
               width={320}
               height={240}
-              className="absolute top-0 left-0"
+              className="absolute top-0 left-0 w-full h-full opacity-0"
             />
           </div>
         )}
@@ -129,9 +159,4 @@ const CameraFeed = ({ onEmotionDetected }) => {
   );
 };
 
-CameraFeed.propTypes = {
-  onEmotionDetected: PropTypes.func.isRequired,
-};
-
 export default CameraFeed;
-
