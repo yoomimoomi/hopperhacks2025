@@ -1,6 +1,4 @@
-import CameraFeed from './components/CameraFeed'
-import EmotionDisplay from './components/EmotionDisplay'
-import Navigation from './components/Navigation'
+import {Navigation} from './components/Navigation'
 import './App.css'
 
 function App() {
