@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { Camera, CameraOff, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loadModels, detectFaces, drawResults } from "@/utils/faceDetection";
-import
+import React from "react";
 
 const CameraFeed = ({ onEmotionDetected }) => {
   const videoRef = useRef(null);
@@ -127,3 +128,10 @@ const CameraFeed = ({ onEmotionDetected }) => {
     </Card>
   );
 };
+
+CameraFeed.propTypes = {
+  onEmotionDetected: PropTypes.func.isRequired,
+};
+
+export default CameraFeed;
+
