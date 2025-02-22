@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from 'prop-types';
 import { AlertTriangle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const EmotionDisplay = ({ emotionData }) => {
   const [stressLevel, setStressLevel] = useState("low");
+  const [stressPercentage, setStressPercentage] = useState(0);
 
-  // Calculate stress level based on detected emotions
+  // Calculate stress level and percentage based on detected emotions
   useEffect(() => {
     if (!emotionData) return;
 
     const { angry, sad, frustrated } = emotionData;
     const stressIndicators = angry + sad + frustrated;
+    const totalIndicators = 3; // Since we have three indicators: angry, sad, frustrated
+    const percentage = (stressIndicators / totalIndicators) * 100;
+
+    setStressPercentage(percentage);
 
     if (stressIndicators > 0.7) setStressLevel("high");
     else if (stressIndicators > 0.4) setStressLevel("medium");
@@ -37,6 +43,7 @@ const EmotionDisplay = ({ emotionData }) => {
           <div className="flex items-center gap-2">
             {stressLevel === "high" && <AlertTriangle className="w-5 h-5" />}
             <span className="font-medium capitalize">{stressLevel}</span>
+            <span className="ml-2">({stressPercentage.toFixed(1)}%)</span>
           </div>
 
           {emotionData && (
@@ -68,6 +75,14 @@ const EmotionDisplay = ({ emotionData }) => {
       </CardContent>
     </Card>
   );
+};
+
+EmotionDisplay.propTypes = {
+  emotionData: PropTypes.shape({
+    angry: PropTypes.number,
+    sad: PropTypes.number,
+    frustrated: PropTypes.number,
+  }),
 };
 
 export default EmotionDisplay;
