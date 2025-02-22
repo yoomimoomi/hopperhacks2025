@@ -96,6 +96,14 @@ function global:deactivate ([switch]$NonDestructive) {
         Remove-Item -Path env:VIRTUAL_ENV
     }
 
+<<<<<<< HEAD
+    # Just remove VIRTUAL_ENV_PROMPT altogether.
+    if (Test-Path -Path Env:VIRTUAL_ENV_PROMPT) {
+        Remove-Item -Path env:VIRTUAL_ENV_PROMPT
+    }
+
+=======
+>>>>>>> 030eb08ce4fc1c2fddcb364aae4f4b677c17bd8b
     # Just remove the _PYTHON_VENV_PROMPT_PREFIX altogether:
     if (Get-Variable -Name "_PYTHON_VENV_PROMPT_PREFIX" -ErrorAction SilentlyContinue) {
         Remove-Variable -Name _PYTHON_VENV_PROMPT_PREFIX -Scope Global -Force
@@ -197,7 +205,11 @@ else {
         $Prompt = $pyvenvCfg['prompt'];
     }
     else {
+<<<<<<< HEAD
+        Write-Verbose "  Setting prompt based on parent's directory's name. (Is the directory name passed to venv module when creating the virtual environment)"
+=======
         Write-Verbose "  Setting prompt based on parent's directory's name. (Is the directory name passed to venv module when creating the virutal environment)"
+>>>>>>> 030eb08ce4fc1c2fddcb364aae4f4b677c17bd8b
         Write-Verbose "  Got leaf-name of $VenvDir='$(Split-Path -Path $venvDir -Leaf)'"
         $Prompt = Split-Path -Path $venvDir -Leaf
     }
@@ -228,6 +240,10 @@ if (-not $Env:VIRTUAL_ENV_DISABLE_PROMPT) {
         Write-Host -NoNewline -ForegroundColor Green "($_PYTHON_VENV_PROMPT_PREFIX) "
         _OLD_VIRTUAL_PROMPT
     }
+<<<<<<< HEAD
+    $env:VIRTUAL_ENV_PROMPT = $Prompt
+=======
+>>>>>>> 030eb08ce4fc1c2fddcb364aae4f4b677c17bd8b
 }
 
 # Clear PYTHONHOME
@@ -239,6 +255,8 @@ if (Test-Path -Path Env:PYTHONHOME) {
 # Add the venv to the PATH
 Copy-Item -Path Env:PATH -Destination Env:_OLD_VIRTUAL_PATH
 $Env:PATH = "$VenvExecDir$([System.IO.Path]::PathSeparator)$Env:PATH"
+<<<<<<< HEAD
+=======
 
 # SIG # Begin signature block
 # MIIaHgYJKoZIhvcNAQcCoIIaDzCCGgsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
@@ -382,3 +400,4 @@ $Env:PATH = "$VenvExecDir$([System.IO.Path]::PathSeparator)$Env:PATH"
 # /slNskA83aeom7iz6jc3sQs2frWt3Rrxux2YSREFEY0508ZzlI0iTLLpflVaewxg
 # VbwCut7qb3zyI8S5Sl4milVC
 # SIG # End signature block
+>>>>>>> 030eb08ce4fc1c2fddcb364aae4f4b677c17bd8b
