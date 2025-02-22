@@ -77,6 +77,7 @@ const EmotionDisplay = ({ emotionData }) => {
   );
 };
 
+
 EmotionDisplay.propTypes = {
   emotionData: PropTypes.shape({
     angry: PropTypes.number,
