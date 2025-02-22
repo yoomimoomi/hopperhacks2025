@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 app = FastAPI()
 
 #load pretrained model
-model = load_model('C:/Users/jason/projects/hopperhacks2025/backend/models/face_model.h5')
+model = load_model('./models/face_model.h5')
 
 #emotion labels via the FER2013 data set
 emotion_labels = ['Anger', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
