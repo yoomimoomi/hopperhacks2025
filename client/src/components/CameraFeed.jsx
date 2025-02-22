@@ -128,8 +128,10 @@ const CameraFeed = ({ onEmotionDetected }) => {
     </Card>
   );
 };
+
 CameraFeed.propTypes = {
   onEmotionDetected: PropTypes.func.isRequired,
 };
 
 export default CameraFeed;
+
