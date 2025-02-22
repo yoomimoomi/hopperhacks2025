@@ -69,5 +69,3 @@ const EmotionDisplay = ({ emotionData }) => {
     </Card>
   );
 };
-
-export default EmotionDisplay;

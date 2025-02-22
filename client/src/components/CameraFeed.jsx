@@ -127,5 +127,3 @@ const CameraFeed = ({ onEmotionDetected }) => {
     </Card>
   );
 };
-
-export default CameraFeed;
