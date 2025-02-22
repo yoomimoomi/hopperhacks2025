@@ -25,7 +25,10 @@ if defined _OLD_VIRTUAL_PATH set PATH=%_OLD_VIRTUAL_PATH%
 if not defined _OLD_VIRTUAL_PATH set _OLD_VIRTUAL_PATH=%PATH%
 
 set PATH=%VIRTUAL_ENV%\Scripts;%PATH%
+<<<<<<< HEAD
 set VIRTUAL_ENV_PROMPT=(venv) 
+=======
+>>>>>>> 030eb08ce4fc1c2fddcb364aae4f4b677c17bd8b
 
 :END
 if defined _OLD_CODEPAGE (
