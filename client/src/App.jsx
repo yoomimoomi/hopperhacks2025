@@ -1,19 +1,9 @@
-import { useState } from 'react'
-import CameraFeed from './components/CameraFeed'
-import EmotionDisplay from './components/EmotionDisplay'
-import './App.css'
+import React from "react";
+import Dashboard from "./components/Dashboard";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <h1>Emotion Detection</h1>
-      <CameraFeed />
-      <EmotionDisplay />
-    </>
-  )
+  return <Dashboard />;
 }
 
-export default App
-
+export default App;
