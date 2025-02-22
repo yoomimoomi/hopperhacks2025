@@ -1,0 +1,17 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+a {
+  padding: 10px;
+  background-color: orange;
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+canvas {
+  display: none;
+}

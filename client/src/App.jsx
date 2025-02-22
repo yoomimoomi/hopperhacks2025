@@ -1,15 +1,9 @@
-import {Navigation} from './components/Navigation'
-import './App.css'
+import React from "react";
+import Dashboard from "./components/Dashboard";
+import "./App.css";
 
 function App() {
-
-  return (
-    <>
-      <Navigation />
-      <h1>Emotion Detection</h1>
-    </>
-  )
+  return <Dashboard />;
 }
 
-export default App
-
+export default App;
