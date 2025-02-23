@@ -21,43 +21,12 @@ _Py_IsMainThread(void)
 }
 
 
-static inline PyInterpreterState *
-_PyInterpreterState_Main(void)
-{
-    return _PyRuntime.interpreters.main;
-}
-
 static inline int
 _Py_IsMainInterpreter(PyInterpreterState *interp)
 {
-    return (interp == _PyInterpreterState_Main());
-}
-
-static inline int
-_Py_IsMainInterpreterFinalizing(PyInterpreterState *interp)
-{
-    /* bpo-39877: Access _PyRuntime directly rather than using
-       tstate->interp->runtime to support calls from Python daemon threads.
-       After Py_Finalize() has been called, tstate can be a dangling pointer:
-       point to PyThreadState freed memory. */
-    return (_PyRuntimeState_GetFinalizing(&_PyRuntime) != NULL &&
-            interp == &_PyRuntime._main_interpreter);
-}
-
-// Export for _xxsubinterpreters module.
-PyAPI_FUNC(int) _PyInterpreterState_SetRunningMain(PyInterpreterState *);
-PyAPI_FUNC(void) _PyInterpreterState_SetNotRunningMain(PyInterpreterState *);
-PyAPI_FUNC(int) _PyInterpreterState_IsRunningMain(PyInterpreterState *);
-
-
-static inline const PyConfig *
-_Py_GetMainConfig(void)
-{
-    PyInterpreterState *interp = _PyInterpreterState_Main();
-    if (interp == NULL) {
-        return NULL;
-    }
-    return _PyInterpreterState_GetConfig(interp);
+    /* Use directly _PyRuntime rather than tstate->interp->runtime, since
+       this function is used in performance critical code path (ceval) */
+    return (interp == _PyRuntime.interpreters.main);
 }
 
 
@@ -65,61 +34,76 @@ _Py_GetMainConfig(void)
 static inline int
 _Py_ThreadCanHandleSignals(PyInterpreterState *interp)
 {
-    return (_Py_IsMainThread() && _Py_IsMainInterpreter(interp));
+    return (_Py_IsMainThread() && interp == _PyRuntime.interpreters.main);
 }
 
 
-/* Variable and static inline functions for in-line access to current thread
+/* Only execute pending calls on the main thread. */
+static inline int
+_Py_ThreadCanHandlePendingCalls(void)
+{
+    return _Py_IsMainThread();
+}
+
+
+/* Variable and macro for in-line access to current thread
    and interpreter state */
 
-#if defined(HAVE_THREAD_LOCAL) && !defined(Py_BUILD_CORE_MODULE)
-extern _Py_thread_local PyThreadState *_Py_tss_tstate;
-#endif
-PyAPI_DATA(PyThreadState *) _PyThreadState_GetCurrent(void);
-
-#ifndef NDEBUG
-extern int _PyThreadState_CheckConsistency(PyThreadState *tstate);
+#ifdef EXPERIMENTAL_ISOLATED_SUBINTERPRETERS
+PyAPI_FUNC(PyThreadState*) _PyThreadState_GetTSS(void);
 #endif
 
-extern int _PyThreadState_MustExit(PyThreadState *tstate);
+static inline PyThreadState*
+_PyRuntimeState_GetThreadState(_PyRuntimeState *runtime)
+{
+#ifdef EXPERIMENTAL_ISOLATED_SUBINTERPRETERS
+    return _PyThreadState_GetTSS();
+#else
+    return (PyThreadState*)_Py_atomic_load_relaxed(&runtime->gilstate.tstate_current);
+#endif
+}
 
 /* Get the current Python thread state.
 
-   This function is unsafe: it does not check for error and it can return NULL.
+   Efficient macro reading directly the 'gilstate.tstate_current' atomic
+   variable. The macro is unsafe: it does not check for error and it can
+   return NULL.
 
    The caller must hold the GIL.
 
-   See also PyThreadState_Get() and _PyThreadState_UncheckedGet(). */
+   See also PyThreadState_Get() and PyThreadState_GET(). */
 static inline PyThreadState*
 _PyThreadState_GET(void)
 {
-#if defined(HAVE_THREAD_LOCAL) && !defined(Py_BUILD_CORE_MODULE)
-    return _Py_tss_tstate;
+#ifdef EXPERIMENTAL_ISOLATED_SUBINTERPRETERS
+    return _PyThreadState_GetTSS();
 #else
-    return _PyThreadState_GetCurrent();
+    return _PyRuntimeState_GetThreadState(&_PyRuntime);
 #endif
 }
 
+/* Redefine PyThreadState_GET() as an alias to _PyThreadState_GET() */
+#undef PyThreadState_GET
+#define PyThreadState_GET() _PyThreadState_GET()
+
+PyAPI_FUNC(void) _Py_NO_RETURN _Py_FatalError_TstateNULL(const char *func);
 
 static inline void
 _Py_EnsureFuncTstateNotNULL(const char *func, PyThreadState *tstate)
 {
     if (tstate == NULL) {
-        _Py_FatalErrorFunc(func,
-            "the function must be called with the GIL held, "
-            "after Python initialization and before Python finalization, "
-            "but the GIL is released (the current Python thread state is NULL)");
+        _Py_FatalError_TstateNULL(func);
     }
 }
 
 // Call Py_FatalError() if tstate is NULL
 #define _Py_EnsureTstateNotNULL(tstate) \
-    _Py_EnsureFuncTstateNotNULL(__func__, (tstate))
+    _Py_EnsureFuncTstateNotNULL(__func__, tstate)
 
 
 /* Get the current interpreter state.
 
-   The function is unsafe: it does not check for error and it can return NULL.
+   The macro is unsafe: it does not check for error and it can return NULL.
 
    The caller must hold the GIL.
 
@@ -134,45 +118,34 @@ static inline PyInterpreterState* _PyInterpreterState_GET(void) {
 }
 
 
-// PyThreadState functions
-
-PyAPI_FUNC(PyThreadState *) _PyThreadState_New(PyInterpreterState *interp);
-PyAPI_FUNC(void) _PyThreadState_Bind(PyThreadState *tstate);
-// We keep this around exclusively for stable ABI compatibility.
-PyAPI_FUNC(void) _PyThreadState_Init(
-    PyThreadState *tstate);
-PyAPI_FUNC(void) _PyThreadState_DeleteExcept(PyThreadState *tstate);
-
-
 /* Other */
 
-PyAPI_FUNC(PyThreadState *) _PyThreadState_Swap(
+PyAPI_FUNC(void) _PyThreadState_Init(
+    PyThreadState *tstate);
+PyAPI_FUNC(void) _PyThreadState_DeleteExcept(
     _PyRuntimeState *runtime,
+    PyThreadState *tstate);
+
+PyAPI_FUNC(PyThreadState *) _PyThreadState_Swap(
+    struct _gilstate_runtime_state *gilstate,
     PyThreadState *newts);
 
 PyAPI_FUNC(PyStatus) _PyInterpreterState_Enable(_PyRuntimeState *runtime);
 
 #ifdef HAVE_FORK
 extern PyStatus _PyInterpreterState_DeleteExceptMain(_PyRuntimeState *runtime);
+extern PyStatus _PyGILState_Reinit(_PyRuntimeState *runtime);
 extern void _PySignal_AfterFork(void);
 #endif
-
-PyAPI_FUNC(int) _PyCrossInterpreterData_ReleaseAndRawFree(_PyCrossInterpreterData *);
 
 
 PyAPI_FUNC(int) _PyState_AddModule(
     PyThreadState *tstate,
     PyObject* module,
-    PyModuleDef* def);
+    struct PyModuleDef* def);
 
 
 PyAPI_FUNC(int) _PyOS_InterruptOccurred(PyThreadState *tstate);
-
-#define HEAD_LOCK(runtime) \
-    PyThread_acquire_lock((runtime)->interpreters.mutex, WAIT_LOCK)
-#define HEAD_UNLOCK(runtime) \
-    PyThread_release_lock((runtime)->interpreters.mutex)
-
 
 #ifdef __cplusplus
 }

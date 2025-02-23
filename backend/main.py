@@ -1,10 +1,25 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
 from keras.models import load_model
 from starlette.responses import JSONResponse
 
 app = FastAPI()
+
+#routing CORS middleware
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 #load pretrained model
 model = load_model('./models/face_model.h5')

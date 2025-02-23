@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
     "bootstrap": "^5.3.3",
     "lucide-react": "^0.263.1",
     "module-alias": "^2.2.3",

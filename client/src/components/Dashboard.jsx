@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AlertCircle, Camera, Menu, X } from "lucide-react";
 import Webcam from "react-webcam";
+// import api from "../api.js;"
 import "bootstrap/dist/css/bootstrap.min.css";
 
 // Function to generate a random bright warm color
