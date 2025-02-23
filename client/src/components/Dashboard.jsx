@@ -129,7 +129,8 @@ const Dashboard = () => {
   };
 
   const handleAccessResources = () => {
-    window.location.href = "https://www.stressmanagementpage.com"; // Replace with actual URL
+    window.location.href =
+      "https://www.cdc.gov/mental-health/living-with/index.html"; // Replace with actual URL
   };
 
   return (
