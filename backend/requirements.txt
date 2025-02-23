@@ -1,11 +1,7 @@
 fastapi 
 uvicorn 
 opencv-python 
-<<<<<<< HEAD
 numpy
 tensorflow
-=======
-cv2
-numpy 
->>>>>>> 030eb08ce4fc1c2fddcb364aae4f4b677c17bd8b
+keras
 python-multipart
