@@ -1,13 +1,12 @@
+# ReRelief
+## "Stress detected. Calm delivered."
 
-# hopperhacks2025
-# React + Vite
+Stress doesn’t just affect your mind—it impacts your entire well-being. From headaches and fatigue to anxiety and feelings of depression, the health impacts of stress are real. According to the American Psychological Association, 76% of adults report that stress negatively impacts their lives, including their mental health, eating habits, physical health, and interest in hobbies.  
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+In today’s fast-paced world, stress has become an unavoidable part of life, especially for younger generations. From overwhelming workloads to societal pressures, stress can feel like it’s taking over. But it doesn’t have to. **ReRelief** is a stress relief app designed to be used in your daily life that uses **computer vision and AI** to detect and assess your stress levels in real-time, providing personalized tips and techniques to help you regain control.
 
-Currently, two official plugins are available:
+ReRelief analyzes cues like facial expressions that resemble stressed-related emotions such as Sad or Angry and gives a stress rating based on it's calculations. Once the stress rating is assessed, it offers proven stress-relief practices tailored to your needs.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-=======
-# hopperhacks2025
->>>>>>> 2cde7144ece64afea0b6073d46622f53be77d147
+### Features:
+- **Real-Time Stress Detection**: Utilizes advanced computer vision to assess your stress levels.  
+- **Personalized Stress Relief Tips**: Get tailored recommendations based on how stressed you are, from quick fixes to deeper relaxation techniques.
